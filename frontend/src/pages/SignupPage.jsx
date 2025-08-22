@@ -10,6 +10,9 @@ const Signup = () => {
     password: "",
     category: "customer",
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -17,10 +20,39 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`🎉 Welcome, ${formData.name}! Account created.`);
-    navigate("/dashboard");
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullname: formData.name,
+          email: formData.email,
+          location: formData.location,
+          password: formData.password,
+          category: formData.category === "business-owner" ? "business_owner" : "customer",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess("🎉 Account created successfully! Redirecting...");
+        setTimeout(() => navigate("/login"), 1500);
+      } else {
+        setError(data.message || "Something went wrong");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,15 +60,17 @@ const Signup = () => {
       <Navbar />
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-100 via-white to-green-50 px-4">
         <div className="bg-white/80 backdrop-blur-md p-10 rounded-3xl shadow-2xl w-full max-w-lg border border-gray-200">
-          {/* Heading */}
           <h2 className="text-4xl font-extrabold mb-2 text-center text-green-700">
             Sign Up
           </h2>
-          <p className="text-center text-gray-500 mb-8">
+          <p className="text-center text-gray-500 mb-6">
             Create your account to get started 🚀
           </p>
 
-          {/* Form */}
+          {/* Success & Error Messages */}
+          {success && <p className="mb-4 text-green-700 font-medium text-center">{success}</p>}
+          {error && <p className="mb-4 text-red-600 font-medium text-center">{error}</p>}
+
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             {/* Name */}
             <div className="relative">
@@ -113,12 +147,15 @@ const Signup = () => {
               </select>
             </div>
 
-            {/* Button */}
+            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-green-700 text-white py-3 rounded-xl font-semibold hover:bg-green-800 transition-all duration-200 transform hover:scale-[1.02] shadow-md"
+              disabled={loading}
+              className={`w-full bg-green-700 text-white py-3 rounded-xl font-semibold hover:bg-green-800 transition-all duration-200 transform hover:scale-[1.02] shadow-md ${
+                loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Sign Up
+              {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
 

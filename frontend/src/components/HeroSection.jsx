@@ -44,7 +44,7 @@ const HeroSection = () => {
           transition={{ duration: 1 }}
           className="text-lg md:text-xl text-gray-700 mb-10 max-w-3xl mx-auto"
         >
-          Explore menus from <span className="font-semibold text-green-600">nearby stores</span> 
+          Explore menus from <span className="font-semibold text-green-600">nearby stores </span> 
           and discover what local businesses have to offer. Fresh, vibrant, and delicious—right at your fingertips!
         </motion.p>
 

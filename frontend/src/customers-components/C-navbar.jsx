@@ -1,25 +1,33 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  FaSearch,
   FaBell,
   FaBars,
   FaTimes,
   FaUserCircle,
-  FaBookmark,
   FaMoon,
   FaSun,
+  FaBookmark,
+  FaPizzaSlice,
+  FaHamburger,
+  FaLeaf,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 const notifications = [
-  "New menu added nearby",
-  "Order confirmed",
-  "Special discount on Pizza",
+  { text: "New menu added nearby", icon: <FaPizzaSlice /> },
+  { text: "Order confirmed", icon: <FaLeaf /> },
+  { text: "Special discount on Pizza", icon: <FaPizzaSlice /> },
+  { text: "Coupon expired", icon: <FaLeaf /> },
+  { text: "New message from chef", icon: <FaHamburger /> },
 ];
+
 const savedMenus = [
-  "Burger Combo - Downtown Bistro",
-  "Green Salad - Green Leaf Cafe",
-  "Pizza Margherita - Italiano Pizzeria",
+  { text: "Burger Combo - Downtown Bistro", icon: <FaHamburger /> },
+  { text: "Green Salad - Green Leaf Cafe", icon: <FaLeaf /> },
+  { text: "Pizza Margherita - Italiano Pizzeria", icon: <FaPizzaSlice /> },
+  { text: "Extra item for scroll test", icon: <FaPizzaSlice /> },
+  { text: "Another saved menu", icon: <FaLeaf /> },
 ];
 
 const dropdownVariants = {
@@ -34,20 +42,22 @@ const sidebarVariants = {
   exit: { x: "-100%", transition: { duration: 0.25 } },
 };
 
-const rightbarVariants = {
-  hidden: { x: "100%" },
-  visible: { x: 0, transition: { duration: 0.3 } },
-  exit: { x: "100%", transition: { duration: 0.25 } },
-};
-
 const CustomerNavbar = ({ darkMode, setDarkMode }) => {
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
+  const [loadingLogout, setLoadingLogout] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Mobile states
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [rightbarOpen, setRightbarOpen] = useState(false);
+  const handleLogout = () => {
+    setLoadingLogout(true);
+    setTimeout(() => {
+      localStorage.clear();
+      navigate("/");
+    }, 1500);
+  };
 
   return (
     <nav
@@ -55,37 +65,17 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
         darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
       }`}
     >
-      {/* Logo */}
       <h1
         className={`text-2xl font-extrabold cursor-pointer hover:scale-105 transition-transform ${
           darkMode ? "text-green-400" : "text-green-700"
         }`}
+        onClick={() => navigate("/")}
       >
         🍴 MenuViberen
       </h1>
 
       {/* Desktop */}
       <div className="hidden md:flex items-center gap-6 relative">
-        {/* Search */}
-        <div className="relative group">
-          <input
-            type="text"
-            placeholder="Search stores..."
-            className={`pl-10 pr-4 py-2 rounded-full border shadow-sm focus:outline-none focus:ring-2 w-64 transition-all group-hover:shadow-md ${
-              darkMode
-                ? "bg-gray-800 border-gray-700 text-gray-200 focus:ring-green-500"
-                : "bg-white border-gray-200 text-gray-800 focus:ring-green-500"
-            }`}
-          />
-          <FaSearch
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors ${
-              darkMode
-                ? "text-gray-400 group-hover:text-green-400"
-                : "text-gray-400 group-hover:text-green-600"
-            }`}
-          />
-        </div>
-
         {/* Notifications */}
         <div className="relative">
           <FaBell
@@ -119,9 +109,9 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
                   {notifications.map((n, idx) => (
                     <li
                       key={idx}
-                      className="text-sm px-2 py-2 rounded-md cursor-pointer border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
+                      className="flex items-center gap-2 text-sm px-2 py-2 rounded-md cursor-pointer border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
                     >
-                      {n}
+                      {n.icon} {n.text}
                     </li>
                   ))}
                 </ul>
@@ -140,9 +130,6 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
               setProfileOpen(false);
             }}
           />
-          <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-            {savedMenus.length}
-          </span>
           <AnimatePresence>
             {savedOpen && (
               <motion.div
@@ -163,9 +150,9 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
                   {savedMenus.map((m, idx) => (
                     <li
                       key={idx}
-                      className="text-sm px-2 py-2 rounded-md cursor-pointer border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
+                      className="flex items-center gap-2 text-sm px-2 py-2 rounded-md cursor-pointer border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
                     >
-                      {m}
+                      {m.icon} {m.text}
                     </li>
                   ))}
                 </ul>
@@ -197,7 +184,7 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
                     : "bg-white border-gray-200 text-gray-700"
                 }`}
               >
-                {["View Profile", "Saved Menus", "Orders", "Favorites", "Settings"].map(
+                {["View Profile", "Orders", "Favorites", "Settings"].map(
                   (item, idx) => (
                     <button
                       key={idx}
@@ -207,41 +194,53 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
                     </button>
                   )
                 )}
+                <button
+                  onClick={() => setLogoutModal(true)}
+                  className="text-left px-2 py-2 rounded-md border transition-all hover:bg-red-100 hover:text-red-700 hover:border-red-500 font-semibold mt-2"
+                >
+                  Logout
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Dark Mode */}
-        <button
+        {/* Modern Dark Mode Toggle */}
+        <div
           onClick={() => setDarkMode(!darkMode)}
-          className="ml-2 text-xl cursor-pointer hover:text-yellow-400 transition-transform hover:scale-110"
+          className={`relative w-16 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+            darkMode ? "bg-gray-700" : "bg-yellow-300"
+          }`}
         >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
+          <div
+            className={`absolute w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+              darkMode ? "translate-x-8" : "translate-x-0"
+            }`}
+          >
+            {darkMode ? (
+              <FaSun className="text-yellow-400 m-auto mt-1" />
+            ) : (
+              <FaMoon className="text-gray-700 m-auto mt-1" />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Mobile Menu Icons */}
+      {/* Mobile Hamburger */}
       <div className="md:hidden flex items-center gap-4">
         <button
-          onClick={() => setSidebarOpen(true)}
-          className="text-xl hover:scale-110 transition"
+          onClick={() => setMobileMenuOpen(true)}
+          className="text-2xl hover:scale-110 transition"
         >
           <FaBars />
         </button>
-        <button
-          onClick={() => setRightbarOpen(true)}
-          className="text-xl hover:scale-110 transition"
-        >
-          <FaUserCircle />
-        </button>
       </div>
 
-      {/* Sidebar (left) */}
+      {/* Mobile Menu */}
       <AnimatePresence>
-        {sidebarOpen && (
+        {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 z-40 flex"
+            className="fixed inset-0 z-50 flex"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -250,128 +249,125 @@ const CustomerNavbar = ({ darkMode, setDarkMode }) => {
             <div
               className={`w-64 p-4 ${
                 darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
-              }`}
+              } flex flex-col gap-4 overflow-y-auto`}
             >
               <button
-                onClick={() => setSidebarOpen(false)}
+                onClick={() => setMobileMenuOpen(false)}
                 className="text-2xl mb-4 hover:text-red-500 transition"
               >
                 <FaTimes />
               </button>
-              <p className="font-bold text-lg mb-2 border-b pb-1">Menu</p>
-              <ul className="space-y-2">
-                {["Home", "Orders", "Favorites", "Settings"].map((item, idx) => (
-                  <li
+              {["View Profile", "Orders", "Favorites", "Settings"].map(
+                (item, idx) => (
+                  <button
                     key={idx}
-                    className="cursor-pointer transition-all px-2 py-2 rounded-md border hover:bg-green-100 hover:text-green-700 hover:border-green-500"
+                    className="px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
                   >
                     {item}
-                  </li>
-                ))}
-              </ul>
+                  </button>
+                )
+              )}
+
+              <h3 className="font-semibold text-green-500 mt-4">Notifications</h3>
+              {notifications.map((n, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 text-sm px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
+                >
+                  {n.icon} {n.text}
+                </div>
+              ))}
+
+              <h3 className="font-semibold text-green-500 mt-4">Saved Menus</h3>
+              {savedMenus.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 text-sm px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
+                >
+                  {m.icon} {m.text}
+                </div>
+              ))}
+
+              <button
+                onClick={() => {
+                  setLogoutModal(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="px-2 py-2 rounded-md border transition-all hover:bg-red-100 hover:text-red-700 hover:border-red-500 font-semibold mt-2"
+              >
+                Logout
+              </button>
+
+              {/* Mobile Toggle */}
+              <div
+                onClick={() => setDarkMode(!darkMode)}
+                className={`relative w-16 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+                  darkMode ? "bg-gray-700" : "bg-yellow-300"
+                }`}
+              >
+                <div
+                  className={`absolute w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                    darkMode ? "translate-x-8" : "translate-x-0"
+                  }`}
+                >
+                  {darkMode ? (
+                    <FaSun className="text-yellow-400 m-auto mt-1" />
+                  ) : (
+                    <FaMoon className="text-gray-700 m-auto mt-1" />
+                  )}
+                </div>
+              </div>
             </div>
-            <div
-              className="flex-1 bg-black/40"
-              onClick={() => setSidebarOpen(false)}
-            />
+            <div className="flex-1 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Rightbar (profile/quick access) */}
+      {/* Logout Modal */}
       <AnimatePresence>
-        {rightbarOpen && (
+        {logoutModal && (
           <motion.div
-            className="fixed inset-0 z-40 flex justify-end"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={rightbarVariants}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {/* Rightbar panel */}
-            <div
-              className={`w-72 p-4 flex flex-col ${
-                darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-800"
-              }`}
+            <motion.div
+              className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg w-80 flex flex-col items-center`}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
             >
-              <button
-                onClick={() => setRightbarOpen(false)}
-                className="text-2xl mb-4 hover:text-red-500 transition"
-              >
-                <FaTimes />
-              </button>
-              <p className="font-bold text-lg mb-3 border-b pb-1">Quick Access</p>
-
-              {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto space-y-4">
-                {/* Notifications */}
-                <div>
-                  <h3 className="font-semibold text-green-500 mb-2 border-b pb-1">
-                    Notifications
-                  </h3>
-                  <ul className="space-y-2">
-                    {notifications.map((n, idx) => (
-                      <li
-                        key={idx}
-                        className="text-sm px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
-                      >
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
+              {!loadingLogout ? (
+                <>
+                  <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
+                    Confirm Logout
+                  </h2>
+                  <p className="mb-6 text-gray-700 dark:text-gray-300 text-center">
+                    Are you sure you want to logout?
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => setLogoutModal(false)}
+                      className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-gray-700 dark:text-gray-200">Logging out...</p>
                 </div>
-
-                {/* Saved Menus */}
-                <div>
-                  <h3 className="font-semibold text-green-500 mb-2 border-b pb-1">
-                    Saved Menus
-                  </h3>
-                  <ul className="space-y-2">
-                    {savedMenus.map((m, idx) => (
-                      <li
-                        key={idx}
-                        className="text-sm px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
-                      >
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Profile */}
-                <div>
-                  <h3 className="font-semibold text-green-500 mb-2 border-b pb-1">
-                    Profile
-                  </h3>
-                  <ul className="space-y-2">
-                    {["View Profile", "Orders", "Favorites", "Settings"].map(
-                      (item, idx) => (
-                        <li
-                          key={idx}
-                          className="cursor-pointer px-2 py-2 rounded-md border transition-all hover:bg-green-100 hover:text-green-700 hover:border-green-500"
-                        >
-                          {item}
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              </div>
-
-              {/* Dark Mode */}
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="mt-4 flex items-center gap-2 text-lg transition-transform hover:scale-105 hover:text-yellow-400"
-              >
-                {darkMode ? <FaSun /> : <FaMoon />} Toggle Dark Mode
-              </button>
-            </div>
-
-            {/* Overlay */}
-            <div
-              className="flex-1 bg-black/40"
-              onClick={() => setRightbarOpen(false)}
-            />
+              )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
